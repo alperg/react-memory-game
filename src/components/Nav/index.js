@@ -8,9 +8,9 @@ function Nav(props) {
         <li className="brand">
           <a href="/">Memory Game</a>
         </li>
-        <NavMessage score={props.score} topScore={props.topScore} />
+        <NavMessage score={props.score} />
         <li>
-          Score: {props.score} | Top Score: {props.topScore}
+          Score: {props.score}
         </li>
       </ul>
     </nav>

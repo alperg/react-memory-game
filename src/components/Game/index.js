@@ -38,8 +38,7 @@ class Game extends Component {
     canFlip: true,
     firstCard: null,
     secondCard: null,
-    score: 0,
-    topScore: 0
+    score: 0
   };
 
   componentDidMount() {
@@ -161,11 +160,11 @@ class Game extends Component {
 	}
 
   render() {
-    const { cards, score, topScore } = this.state;
+    const { cards, score } = this.state;
 
     return (
       <div>
-        <Nav score={score} topScore={topScore} />
+        <Nav score={score} />
         <Header />
         <Container>
           <div className="game container-md">

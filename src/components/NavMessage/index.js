@@ -8,12 +8,12 @@ class NavMessage extends Component {
     animating: false
   };
 
-  componentDidUpdate({ score, topScore }, prevState) {
+  componentDidUpdate({ score  }, prevState) {
     const newState = { animating: true };
 
-    if (score === 0 && topScore === 0) {
+    if (score === 0) {
       newState.message = "";
-    } else if (score === 0 && topScore > 0) {
+    } else if (score === 0) {
       newState.message = "incorrect";
     } else {
       newState.message = "correct";
