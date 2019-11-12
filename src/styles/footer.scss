@@ -1,0 +1,26 @@
+.footer {
+  background: #6956AF;
+  width: 100%;
+  position: fixed;
+  color: white;
+  overflow: auto;
+  bottom: 0;
+  height: 40px;
+
+  .bottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background:#5138A1;
+    padding: 8px;
+    font-weight: 600;
+
+    img {
+      width: 20px;
+      position: relative;
+      top: 3px;
+      left: 2px;
+    }
+  }
+}
