@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, {useEffect, useState} from "react";
 import uuid from "uuid";
 import deepcopy from "deepcopy";
 import Nav from "../Nav";
@@ -32,155 +32,109 @@ function generateCards(count) {
   return shuffleArray(cards);
 }
 
-class Game extends Component {
-  state = {
-    cards: generateCards(FIELD_WIDTH * FIELD_HEIGHT),
-    canFlip: true,
-    firstCard: null,
-    secondCard: null,
-    score: 0
-  };
+export default function Game() {
+	const totalCards = FIELD_WIDTH * FIELD_HEIGHT;
 
-  componentDidMount() {
-    this.setState({ cards: generateCards(FIELD_WIDTH * FIELD_HEIGHT) });
-    console.log(this.state.cards);
-  }
+	const [cards, setCards] = useState(generateCards(totalCards));
+	const [canFlip, setCanFlip] = useState(false);
+	const [firstCard, setFirstCard] = useState(null);
+  const [secondCard, setSecondCard] = useState(null);
+  const [score, setScore] = useState(0);
 
-  componentDidUpdate(prevProps, prevState) {
-    // console.log('changed:');
-    // console.log(JSON.stringify(prevState.cards) === JSON.stringify(this.state.cards));
-
-    if(JSON.stringify(prevState.cards) !== JSON.stringify(this.state.cards)) {
-      const { cards } = this.state;
-
-      setTimeout(() => {
-        let index = 0;
-        for (const card of cards) {
-          setTimeout(() => this.setCardIsFlipped(card.id, true), index++ * 100);
-        }
-        setTimeout(() => this.setCardCanFlip(true), cards.length * 100);
-      }, 3000);
-    }
-
-    if(!this.state.firstCard || !this.state.secondCard) {
-      return;
-    }
-
-    if(this.state.firstCard.imageURL === this.state.secondCard.imageURL) {
-      this.onSuccessGuess();
-    } else {
-      this.onFailureGuess();
-    }
-  }
-
-  setCardIsFlipped = (cardID, isFlipped) => {
-    const cards = this.state.cards.map(c => {
-			if (c.id !== cardID) {
-        return c;
-      }
+	function setCardIsFlipped(cardID, isFlipped) {
+		setCards(prev => prev.map(c => {
+			if (c.id !== cardID)
+				return c;
 			return {...c, isFlipped};
-    });
-    console.log(cards);
-		this.setState({ cards });
-	}
+		}));
+  }
   
-  setCardCanFlip = (cardID, canFlip) => {
-    console.log(canFlip)
-    const cards = this.state.cards.map(c => {
-			if (c.id !== cardID) {
-        return c;
-      }
+	function setCardCanFlip(cardID, canFlip) {
+		setCards(prev => prev.map(c => {
+			if (c.id !== cardID)
+				return c;
 			return {...c, canFlip};
-    });
-    console.log(cards);
-    this.setState({ cards });
+		}));
 	}
 
-  resetFirstAndSecondCards = () => {
-    this.setState({
-      firstCard: null,
-      secondCard: null
-    });
+	useEffect(() => {
+		setTimeout(() => {
+			let index = 0;
+			for (const card of cards) {
+				setTimeout(() => setCardIsFlipped(card.id, true), index++ * 100);
+			}
+			setTimeout(() => setCanFlip(true), cards.length * 100);
+		}, 3000);
+	}, []);
+
+
+	function resetFirstAndSecondCards() {
+		setFirstCard(null);
+		setSecondCard(null);
 	}
 
-	onSuccessGuess = () => {
-    const { firstCard, secondCard } = this.state;
-
-		this.setCardCanFlip(firstCard.id, false);
-		this.setCardCanFlip(secondCard.id, false);
-		this.setCardIsFlipped(firstCard.id, false);
-		this.setCardIsFlipped(secondCard.id, false);
-		this.resetFirstAndSecondCards();
-	}
+	function onSuccessGuess() {
+		setCardCanFlip(firstCard.id, false);
+		setCardCanFlip(secondCard.id, false);
+		setCardIsFlipped(firstCard.id, false);
+		setCardIsFlipped(secondCard.id, false);
+    resetFirstAndSecondCards();
+    setScore(score + 10);
+  }
   
-  onFailureGuess = () => {
-    const { firstCard, secondCard } = this.state;
+	function onFailureGuess() {
 		const firstCardID = firstCard.id;
 		const secondCardID = secondCard.id;
 
 		setTimeout(() => {
-			this.setCardIsFlipped(firstCardID, true);
-    }, 1000);
-    
+			setCardIsFlipped(firstCardID, true);
+		}, 1000);
 		setTimeout(() => {
-			this.setCardIsFlipped(secondCardID, true);
+			setCardIsFlipped(secondCardID, true);
 		}, 1200);
 
-		this.resetFirstAndSecondCards();
+    resetFirstAndSecondCards();
+    setScore(score - 1);
 	}
 
-	onCardClick = (card) => {
-    console.log(card);
-    const { canFlip, firstCard, secondCard } = this.state;
+	useEffect(() => {
+		if (!firstCard || !secondCard)
+			return;
+		(firstCard.imageURL === secondCard.imageURL) ? onSuccessGuess() : onFailureGuess();
+	}, [firstCard, secondCard]);
 
-		if (!canFlip) {
-      return;
-    }
 
-		if (!card.canFlip) {
-      return;
-    }
+	function onCardClick(card) {
+		if (!canFlip)
+			return;
+		if (!card.canFlip)
+			return;
 
 		// eslint-disable-next-line no-mixed-operators
-		if ((firstCard && (card.id === firstCard.id) || (secondCard && (card.id === secondCard.id)))) {
-      return;
-    }
+		if ((firstCard && (card.id === firstCard.id) || (secondCard && (card.id === secondCard.id))))
+			return;
 
-    this.setCardIsFlipped(card.id, false);
+		setCardIsFlipped(card.id, false);
 
-		if(firstCard) {
-      this.setState({
-        secondCard: card
-      });
-    } else {
-      this.setState({
-        firstCard: card
-      });
-    }
+		(firstCard) ? setSecondCard(card) : setFirstCard(card);
 	}
 
-  render() {
-    const { cards, score } = this.state;
-
-    return (
-      <div>
-        <Nav score={score} />
-        <Header />
-        <Container>
-          <div className="game container-md">
-            <div className="cards-container">
-              {
-                cards.map(card => (
-                  <Card onClick={() => this.onCardClick(card)} key={card.id} {...card}/>
-                ))
-              }
-            </div>
+  return (
+    <div>
+      <Nav score={score} />
+      <Header />
+      <Container>
+        <div className="game container-md">
+          <div className="cards-container">
+            {
+              cards.map(card => (
+                <Card onClick={() => onCardClick(card)} key={card.id} {...card} />
+              ))
+            }
           </div>
-        </Container>
-        <Footer />
-      </div>
-    );
-  }
+        </div>
+      </Container>
+      <Footer />
+    </div>
+  );
 }
-
-export default Game;
